@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.Toast
 import com.gmail.weronikapios7.quizapp.databinding.ActivityMainBinding
 
+//TODO use a navigation component and make ResultActivity and QuizQuestionsActivity destinations instead of activities
+//TODO read questions from a file or firebase
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
