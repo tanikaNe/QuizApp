@@ -1,11 +1,13 @@
 package com.gmail.weronikapios7.quizapp
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.gmail.weronikapios7.quizapp.databinding.ActivityQuizQuestionsBinding
 
@@ -15,6 +17,8 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var currentPosition = 1
     private var questionsList: ArrayList<Question>? = null
     private var selectedOptionPosition = 0
+    private var username: String? = null
+    private var correctAnswers = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +26,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         val view = binding.root
         setContentView(view)
 
+        username = intent.getStringExtra(Constants.USER_NAME)
         binding.optionOne.setOnClickListener(this)
         binding.optionTwo.setOnClickListener(this)
         binding.optionThree.setOnClickListener(this)
@@ -34,6 +39,8 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setQuestion() {
+
+        defaultOptionsView()
 
         val question: Question = questionsList!![currentPosition - 1]
         binding.progressBar.progress = currentPosition
@@ -53,6 +60,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun defaultOptionsView() {
+        binding.btnSubmit.text = "SUBMIT"
         val options = ArrayList<TextView>()
         binding.optionOne.let {
             options.add(0, it)
@@ -92,18 +100,80 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View?) {
         when (view?.id) {
             R.id.option_one -> {
-                binding.optionOne.let { selectedOptionView(it, 1) }
+                selectedOptionView(binding.optionOne, 1)
             }
             R.id.option_two -> {
-                binding.optionTwo.let { selectedOptionView(it, 2) }
+                selectedOptionView(binding.optionTwo, 2)
             }
             R.id.option_three -> {
-                binding.optionThree.let { selectedOptionView(it, 3) }
+                selectedOptionView(binding.optionThree, 3)
             }
             R.id.option_four -> {
-                binding.optionFour.let { selectedOptionView(it, 4) }
+                selectedOptionView(binding.optionFour, 4)
             }
-            R.id.btn_submit -> { //TODO implement }
+            R.id.btn_submit -> {
+                if (selectedOptionPosition == 0) {
+                    currentPosition++
+
+                    when {
+                        currentPosition <= questionsList!!.size -> {
+                            setQuestion()
+                        }
+                        else ->{
+                            val intent = Intent(this, ResultActivity::class.java)
+                            intent.putExtra(Constants.USER_NAME, username)
+                            intent.putExtra(Constants.CORRECT_ANSWERS, correctAnswers)
+                            intent.putExtra(Constants.TOTAL_QUESTIONS, questionsList?.size)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+                }else{
+                    val question = questionsList?.get((currentPosition - 1))
+                    if(question!!.correctAnswer != selectedOptionPosition){
+                        answerView(selectedOptionPosition, R.drawable.wrong_option_bg)
+                    }else{
+                        correctAnswers++
+                    }
+                    answerView(question.correctAnswer, R.drawable.correct_option_bg)
+
+                    if(currentPosition == questionsList!!.size){
+                        binding.btnSubmit.text = "FINISH"
+                    }else{
+                        binding.btnSubmit.text = "NEXT QUESTION"
+                    }
+
+                    selectedOptionPosition = 0
+                }
+            }
+        }
+    }
+
+    private fun answerView(answer: Int, drawableView: Int) {
+        when (answer) {
+            1 -> {
+                binding.optionOne.background = ContextCompat.getDrawable(
+                    this,
+                    drawableView
+                )
+            }
+            2 -> {
+                binding.optionTwo.background = ContextCompat.getDrawable(
+                    this,
+                    drawableView
+                )
+            }
+            3 -> {
+                binding.optionThree.background = ContextCompat.getDrawable(
+                    this,
+                    drawableView
+                )
+            }
+            4 -> {
+                binding.optionFour.background = ContextCompat.getDrawable(
+                    this,
+                    drawableView
+                )
             }
         }
     }
